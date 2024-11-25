@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace CalebUtils
 {
-    class CalebUtility
+    public static class CalebUtility
     {
-        public Vector3 RandomPositionInRadius(Vector3 oldPos, int innerRadius, int outerRadius)
+        static public Vector3 RandomPositionInRadius(this Vector3 oldPos, int innerRadius, int outerRadius)
         {
             Vector3 newPos = oldPos;
             while (Vector3.Distance(newPos, oldPos) < innerRadius)
@@ -18,7 +18,7 @@ namespace CalebUtils
             return newPos;
         }
 
-        public Vector3 MoveAway(Vector3 current, Vector3 target, float maxDistanceDelta)
+        public static Vector3 MoveAway(this Vector3 current, Vector3 target, float maxDistanceDelta)
         {
             Vector3 a = target - current;
             float magnitude = a.magnitude;
@@ -31,7 +31,7 @@ namespace CalebUtils
             return newVal;
         }
 
-        public List<GameObject> FindChildrenWithTag(Transform parent, string tag)
+        public static List<GameObject> FindChildrenWithTag(this Transform parent, string tag)
         {
             List<GameObject> _objectList = new List<GameObject>();
             foreach (Transform child in parent)
@@ -44,34 +44,34 @@ namespace CalebUtils
             return _objectList;
         }
 
-        public void LookAt2D(Transform t, Vector3 worldPosition)
+        public static void LookAt2D(this Transform t, Vector3 worldPosition)
         {
             t.rotation = Quaternion.identity;
             t.Rotate(Vector3.forward, (Mathf.Atan2(t.position.y - worldPosition.y, t.position.x - worldPosition.x) * 180 / Mathf.PI) - 180f);
         }
-        public void LookAt2D(Transform t, Transform target)
+        public static void LookAt2D(this Transform t, Transform target)
         {
             t.rotation = Quaternion.identity;
             t.Rotate(Vector3.forward, (Mathf.Atan2(t.position.y - target.position.y, t.position.x - target.position.x) * 180 / Mathf.PI) - 180f);
         }
-        public void LookAwayFrom2D(Transform t, Vector3 worldPosition)
+        public static void LookAwayFrom2D(this Transform t, Vector3 worldPosition)
         {
             t.rotation = Quaternion.identity;
             t.Rotate(Vector3.forward, (Mathf.Atan2(t.position.y - worldPosition.y, t.position.x - worldPosition.x) * 180 / Mathf.PI));
         }
-        public void LookAwayFrom2D(Transform t, Transform target)
+        public static void LookAwayFrom2D(this Transform t, Transform target)
         {
             t.rotation = Quaternion.identity;
             t.Rotate(Vector3.forward, (Mathf.Atan2(t.position.y - target.position.y, t.position.x - target.position.x) * 180 / Mathf.PI));
         }
 
-        public void RandomDirForceNoYAxis3D(Rigidbody rb, float force)
+        public static void RandomDirForceNoYAxis3D(this Rigidbody rb, float force)
         {
             Vector3 direction = new Vector3((float)Random.Range(-1000, 1000), 0, (float)Random.Range(-1000, 1000));
             rb.AddForce(direction * force);
         }
 
-        public GameObject GetParentOfTriggerCollider(Collider collider)//we always check for triggers and all of them are organized to be the child of their base gameobject (where their scripts are)
+        public static GameObject GetParentOfTriggerCollider(this Collider collider)//we always check for triggers and all of them are organized to be the child of their base gameobject (where their scripts are)
         {
             if (collider.transform.parent == null)
             {
