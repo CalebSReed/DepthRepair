@@ -7,6 +7,7 @@ public class Player : MonoBehaviour
 {
     [SerializeField] private float _playerSpeed;
     [SerializeField] private Camera _mainCam;
+    [SerializeField] private float _turnAroundSpeed;
     private Vector2 _movement;
     private PlayerInput _playerInput;
 
@@ -24,7 +25,6 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        ReadMousePosition();
         ReadMovement();
     }
 
@@ -48,7 +48,7 @@ public class Player : MonoBehaviour
     {
         if (_playerInput.Player.Fire.ReadValue<float>() == 0)//Only look at point when we are trying to use vacuum sucker
         {
-            transform.rotation = Quaternion.identity;
+            LookTowardsMovement();
             return;
         }
 
@@ -63,5 +63,15 @@ public class Player : MonoBehaviour
     private Vector2 ReadMousePosition()
     {
         return _playerInput.Player.Mouse.ReadValue<Vector2>();
+    }
+
+    private void LookTowardsMovement()
+    {
+        if (_movement.x != 0 || _movement.y != 0)
+        {
+            Vector3 lookAtRotation = new Vector3(_movement.x, 0, _movement.y);
+            Quaternion newRot = Quaternion.LookRotation(lookAtRotation, Vector3.up);
+            transform.rotation = Quaternion.Lerp(transform.rotation, newRot, _turnAroundSpeed);
+        }
     }
 }
