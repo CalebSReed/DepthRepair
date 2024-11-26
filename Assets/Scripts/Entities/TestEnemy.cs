@@ -5,15 +5,17 @@ using CalebUtils;
 
 public class TestEnemy : MonoBehaviour
 {
-    [SerializeField] private HealthManager _hpManager;
+    public bool BeingSucked;
+    public HealthManager HpManager;
+    public Rigidbody Rb;
     [SerializeField] private Player _player;
     [SerializeField] private float _detectionRadius;
+    [SerializeField] private float _speed;
     private bool _playerFound;
-    private bool _beingSucked;
 
     void Start()
     {
-        
+        HpManager.OnDeath += Die;
     }
 
     void Update()
@@ -22,7 +24,7 @@ public class TestEnemy : MonoBehaviour
 
         if (_playerFound)
         {
-            if (!_beingSucked)
+            if (!BeingSucked)
             {
                 ChasePlayer();
             }
@@ -47,11 +49,20 @@ public class TestEnemy : MonoBehaviour
 
     private void ChasePlayer()
     {
-        transform.position = Vector3.MoveTowards(transform.position, _player.transform.position, Time.deltaTime);
+        var targetPos = Vector3.MoveTowards(transform.position, _player.transform.position, _speed * Time.deltaTime);
+        transform.LookAt(targetPos);
+        transform.position = targetPos;
     }
 
     private void RunFromPlayer()
     {
-        transform.position.MoveAway(_player.transform.position, Time.deltaTime);
+        var targetPos = CalebUtility.MoveAway(transform.position, _player.transform.position, _speed * Time.deltaTime);
+        transform.LookAt(targetPos);
+        transform.position = targetPos;
+    }
+
+    private void Die(object sender, System.EventArgs e)
+    {
+        Destroy(gameObject);
     }
 }

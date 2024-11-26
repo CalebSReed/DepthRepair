@@ -326,8 +326,8 @@ Transform:
   m_GameObject: {fileID: 955902727}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.5, z: 0}
-  m_LocalScale: {x: 50, y: 1, z: 50}
+  m_LocalPosition: {x: 0, y: -0.01, z: 0}
+  m_LocalScale: {x: 50, y: 0.01, z: 50}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -366,9 +366,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a2841fb38dfa0c41b142a9878d1cbf0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _hpManager: {fileID: 1289054077}
+  BeingSucked: 0
+  HpManager: {fileID: 1289054077}
+  Rb: {fileID: 1289054078}
   _player: {fileID: 2100787937}
   _detectionRadius: 10
+  _speed: 4
 --- !u!136 &1289054073
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -451,7 +454,7 @@ Transform:
   m_GameObject: {fileID: 1289054071}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5, y: 1, z: 5}
+  m_LocalPosition: {x: 10, y: 1, z: 5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -470,6 +473,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _maxHealth: 20
+  _currentHealth: 0
 --- !u!54 &1289054078
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -509,6 +513,7 @@ GameObject:
   - component: {fileID: 1563504436}
   - component: {fileID: 1563504435}
   - component: {fileID: 1563504438}
+  - component: {fileID: 1563504439}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -605,6 +610,18 @@ MonoBehaviour:
   _cameraOffset: {x: 0, y: 5, z: -15}
   _playerTransform: {fileID: 2100787936}
   _smoothTime: 0.25
+--- !u!114 &1563504439
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1563504434}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b5d6040c4be25747a206a4c8e67bffb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1760823427
 GameObject:
   m_ObjectHideFlags: 0
@@ -657,8 +674,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 12, y: 2, z: 5}
-  m_Center: {x: 0, y: 0, z: 1.5}
+  m_Size: {x: 12, y: 2, z: 8}
+  m_Center: {x: 0, y: 0, z: 3}
 --- !u!65 &1760823430
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -897,6 +914,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _playerSpeed: 10
+  _damageMult: 1
   _mainCam: {fileID: 1563504436}
   _rb: {fileID: 2100787938}
   _turnAroundSpeed: 0.15
