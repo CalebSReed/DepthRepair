@@ -110,7 +110,7 @@ public class Player : MonoBehaviour
         {
             enemy.HpManager.TakeDamage(Time.fixedDeltaTime * distance * _damageMult);
         }
-        enemy.Rb.AddForce(-enemy.transform.forward * (20 + distance * 5), ForceMode.Force);
+        enemy.Rb.AddForce(-enemy.transform.forward * (40 + distance * 10), ForceMode.Force);
     }
 
     private Vector3 AdjustVelocityToSlope(Vector3 velocity)
