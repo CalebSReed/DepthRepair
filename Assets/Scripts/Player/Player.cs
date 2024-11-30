@@ -20,6 +20,8 @@ public class Player : MonoBehaviour
     [SerializeField] private float _suctionGrip;
     private bool _canSuck = true;
     private RaycastHit _slopeHit;
+    private bool _isPlayerTurn = true;
+    private float _turnDuration;
 
     private void Awake()
     {
@@ -30,6 +32,7 @@ public class Player : MonoBehaviour
         _hpManager = GetComponent<HealthManager>();
         _hpManager.OnDeath += Die;
         _suctionGrip = _maxSuctionGrip;
+        _turnDuration = 1f;
     }
 
     private void Start()
@@ -47,6 +50,7 @@ public class Player : MonoBehaviour
         }
         else if (_playerInput.Player.Fire.ReadValue<float>() > 0 && _isSucking)
         {
+            ManageCurrentTurn();
             if (_suctionGrip > 0)
             {
                 foreach (var enemy in SuckingEnemiesList)
@@ -93,6 +97,18 @@ public class Player : MonoBehaviour
         }
         _suctionGrip = _maxSuctionGrip;
         _isSucking = false;
+        _isPlayerTurn = true;
+        _turnDuration = 1f;
+    }
+
+    private void ManageCurrentTurn()
+    {
+        _turnDuration -= Time.deltaTime;
+        if (_turnDuration < 0)
+        {
+            _turnDuration += 1f;
+            _isPlayerTurn = !_isPlayerTurn;
+        }
     }
 
     private void ReadMovement()
@@ -175,7 +191,41 @@ public class Player : MonoBehaviour
             _suctionGrip -= Time.deltaTime * 5 * 10;
             _hpManager.TakeDamage(Time.deltaTime * 20);
         }
-        enemy.Rb.AddForce((transform.position - enemy.transform.position) * ((1000 + distance * 800) * Time.deltaTime), ForceMode.Force);
+
+        if (_isPlayerTurn)
+        {
+            enemy.transform.position = ForceMaximumDistanceFromPoint(transform.position, enemy.transform.position, 10f);
+            enemy.Rb.AddForce((transform.position - enemy.transform.position) * ((800 + distance * 800) * Time.deltaTime), ForceMode.Force);
+        }
+        else
+        {
+            transform.position = ForceMaximumDistanceFromPoint(enemy.transform.position, transform.position, 10f);
+            //_rb.AddForce((enemy.transform.position - transform.position) * ((1000 + distance * 800) * Time.deltaTime), ForceMode.Force);
+        }
+    }
+
+    private Vector3 ForceMaximumDistanceFromPoint(Vector3 origin, Vector3 target, float maxDistance)
+    {
+        Vector3 newPos;
+        float distance = Vector2.Distance(new Vector2(origin.x, origin.z), new Vector2(target.x, target.z));
+
+        newPos.x = origin.x + maxDistance / distance * (target.x - origin.x);// 0,0 0,1 -> 0 + 10 / 1 * (0 + 1) = 0, 10
+        newPos.y = target.y;
+        newPos.z = origin.z + maxDistance / distance * (target.z - origin.z);
+        Debug.Log($"enemy pos is {target}");
+        Debug.Log($"Newpos is {newPos}");
+        Debug.Log($"Distance between origin and newpos is {Vector3.Distance(origin, newPos)}");
+        if (Vector3.Distance(origin, target) > maxDistance)
+        {
+            //newPos.x *= -1f;
+            //newPos.z *= -1f;
+            Debug.Log($"Teleporting to : {newPos}");
+            return newPos;
+        }
+        else
+        {
+            return target;
+        }
     }
 
     private Vector3 AdjustVelocityToSlope(Vector3 velocity)

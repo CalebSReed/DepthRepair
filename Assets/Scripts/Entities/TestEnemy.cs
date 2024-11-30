@@ -69,13 +69,12 @@ public class TestEnemy : MonoBehaviour
 
     private void RunFromPlayer()
     {
-        var targetPos = transform.position + (transform.forward * _speed * Time.deltaTime);
+        var targetPos = transform.position + (transform.forward * _speed * 2 * Time.deltaTime);
         transform.position = targetPos;
     }
 
     private void Squirm()
     {
-        Debug.Log(transform.rotation);
         if (transform.rotation == _targetRot)
         {
             _targetRot = Quaternion.AngleAxis(Random.Range(0, 360), Vector3.up) * transform.rotation;
