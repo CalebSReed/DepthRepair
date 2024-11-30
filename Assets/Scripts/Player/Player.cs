@@ -5,23 +5,31 @@ using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
+    public List<TestEnemy> SuckingEnemiesList = new List<TestEnemy>();
     [SerializeField] private float _playerSpeed;
     [SerializeField] private float _damageMult;
     [SerializeField] private Camera _mainCam;
     [SerializeField] private Rigidbody _rb;
     [SerializeField] private float _turnAroundSpeed;
     [SerializeField] private float _aimingSpeed;
+    private HealthManager _hpManager;
     private Vector2 _movement;
     private PlayerInput _playerInput;
     private bool _isSucking;
+    [SerializeField] private float _maxSuctionGrip;
+    [SerializeField] private float _suctionGrip;
+    private bool _canSuck = true;
     private RaycastHit _slopeHit;
-    private List<TestEnemy> _suckingEnemiesList = new List<TestEnemy>();
 
     private void Awake()
     {
         _playerInput = new PlayerInput();
 
         _playerInput.Enable();
+
+        _hpManager = GetComponent<HealthManager>();
+        _hpManager.OnDeath += Die;
+        _suctionGrip = _maxSuctionGrip;
     }
 
     private void Start()
@@ -33,16 +41,25 @@ public class Player : MonoBehaviour
     {
         ReadMovement();
 
-        if (_playerInput.Player.Fire.ReadValue<float>() > 0 && !_isSucking)
+        if (_playerInput.Player.Fire.ReadValue<float>() > 0 && !_isSucking && _canSuck)
         {
             StartSucking();
         }
         else if (_playerInput.Player.Fire.ReadValue<float>() > 0 && _isSucking)
         {
-            foreach (var enemy in _suckingEnemiesList)
+            if (_suctionGrip > 0)
             {
-                TryToDamage(enemy);
+                foreach (var enemy in SuckingEnemiesList)
+                {
+                    TryToDamage(enemy);
+                }
             }
+            else
+            {
+                StopSucking();
+                StartCoroutine(LoseSuctionGripTimer());
+            }
+
         }
         else if (_playerInput.Player.Fire.ReadValue<float>() == 0 && _isSucking)
         {
@@ -56,6 +73,13 @@ public class Player : MonoBehaviour
         DoMovement();
     }
 
+    private IEnumerator LoseSuctionGripTimer()
+    {
+        _canSuck = false;
+        yield return new WaitForSeconds(1);
+        _canSuck = true;
+    }
+
     private void StartSucking()
     {
         _isSucking = true;
@@ -63,10 +87,11 @@ public class Player : MonoBehaviour
 
     private void StopSucking()
     {
-        foreach (var enemy in _suckingEnemiesList)
+        foreach (var enemy in SuckingEnemiesList)
         {
             enemy.BeingSucked = false;
         }
+        _suctionGrip = _maxSuctionGrip;
         _isSucking = false;
     }
 
@@ -77,9 +102,12 @@ public class Player : MonoBehaviour
 
     private void DoMovement()
     {
-        var newDir = new Vector3(_movement.x, 0, _movement.y);
-        newDir = AdjustVelocityToSlope(newDir);
-        _rb.MovePosition(transform.position + _playerSpeed * Time.fixedDeltaTime * newDir.normalized);
+        if (_canSuck)//placeholder bool - Don't move as a punishment if u lost suction grip
+        {
+            var newDir = new Vector3(_movement.x, 0, _movement.y);
+            newDir = AdjustVelocityToSlope(newDir);
+            _rb.MovePosition(transform.position + _playerSpeed * Time.fixedDeltaTime * newDir.normalized);
+        }
     }
 
     private void LookTowardsMouse()
@@ -118,10 +146,35 @@ public class Player : MonoBehaviour
     private void TryToDamage(TestEnemy enemy)
     {
         enemy.BeingSucked = true;
-        var distance = Vector3.Distance(new Vector3(_movement.x, 0, _movement.y), enemy.transform.forward);
-        if (distance > 1)
+        var distance = Vector3.Distance(new Vector3(_movement.x, 0, _movement.y), (enemy.transform.position - transform.position).normalized);
+        Debug.Log(distance);
+        if (distance > 1.25f)//distance will be a max of 2 since we're working with normalized vectors. 2 is best sucking, 0 is worst. 1 is if you're not holding any buttons.
         {
             enemy.HpManager.TakeDamage(Time.deltaTime * distance * _damageMult);
+            if (_suctionGrip < _maxSuctionGrip)
+            {
+                _suctionGrip += Time.deltaTime * 2;
+            }
+        }
+        else if (distance > .5f)
+        {
+            _suctionGrip -= Time.deltaTime * 5 * (1/distance);//distance range here is 1.25 - .5f. So we get a damage per second range of 4-10
+            if (_suctionGrip < _maxSuctionGrip / 2)
+            {
+                _hpManager.TakeDamage(Time.deltaTime * 5 * (1/distance));
+            }
+        }
+        else if (distance != 0f)
+        {
+            _suctionGrip -= Time.deltaTime * 5 * Mathf.Min(1/distance, 10);//from .5f to 0 distance our damage per second range is 10-50. 2 seconds to die with worst possible sucking
+            _hpManager.TakeDamage(Time.deltaTime * 5 * Mathf.Min(1/distance, 10));
+
+        }
+        else//if distance is 0. Don't get a divide by 0 error please.
+        {
+            Debug.Log("Must be rare to get a distance of 0!! Congrats?????");
+            _suctionGrip -= Time.deltaTime * 5 * 10;
+            _hpManager.TakeDamage(Time.deltaTime * 20);
         }
         enemy.Rb.AddForce(-enemy.transform.forward * ((1000 + distance * 800) * Time.deltaTime), ForceMode.Force);
     }
@@ -150,9 +203,9 @@ public class Player : MonoBehaviour
         {
             var enemy = collider.GetComponent<TestEnemy>();
             enemy.BeingSucked = true;
-            if (!_suckingEnemiesList.Contains(enemy))
+            if (!SuckingEnemiesList.Contains(enemy))
             {
-                _suckingEnemiesList.Add(enemy);
+                SuckingEnemiesList.Add(enemy);
             }
         }
         else if (collider.CompareTag("Enemy") && !_isSucking)
@@ -161,12 +214,8 @@ public class Player : MonoBehaviour
         }
     }
 
-    private void OnTriggerExit(Collider collider)
+    private void Die(object sender, System.EventArgs e)
     {
-        /*if (collider.CompareTag("Enemy") && collider.GetComponent<TestEnemy>().BeingSucked)
-        {
-            collider.GetComponent<TestEnemy>().BeingSucked = false;
-            collider.transform.GetComponent<Rigidbody>().AddForce(Vector3.down * 25, ForceMode.Impulse);
-        }*/
+        Destroy(gameObject);
     }
 }

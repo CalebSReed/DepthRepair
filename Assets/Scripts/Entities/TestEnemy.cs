@@ -63,6 +63,7 @@ public class TestEnemy : MonoBehaviour
 
     private void Die(object sender, System.EventArgs e)
     {
+        _player.SuckingEnemiesList.Remove(this);
         Destroy(gameObject);
     }
 }
