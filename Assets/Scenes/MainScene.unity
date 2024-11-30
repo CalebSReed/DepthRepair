@@ -302,7 +302,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a2841fb38dfa0c41b142a9878d1cbf0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BeingSucked: 0
   HpManager: {fileID: 204633320}
   Rb: {fileID: 204633319}
   _player: {fileID: 2100787937}
@@ -936,7 +935,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a2841fb38dfa0c41b142a9878d1cbf0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BeingSucked: 0
   HpManager: {fileID: 1289054077}
   Rb: {fileID: 1289054078}
   _player: {fileID: 2100787937}

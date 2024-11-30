@@ -89,7 +89,7 @@ public class Player : MonoBehaviour
     {
         foreach (var enemy in SuckingEnemiesList)
         {
-            enemy.BeingSucked = false;
+            enemy.GetUnsucked();
         }
         _suctionGrip = _maxSuctionGrip;
         _isSucking = false;
@@ -120,7 +120,7 @@ public class Player : MonoBehaviour
 
         Vector3 lookPos = ReadMousePosition();
         lookPos.z = transform.position.z - _mainCam.transform.position.z;
-        lookPos.z += .8f;//magic number honestly i have no idea
+        lookPos.z += .8f;//magic number honestly i have no idea EDIT: IT DOESNT EVEN MATTER!!!!
         Vector3 lookAtPoint = _mainCam.ScreenToWorldPoint(lookPos);
         lookAtPoint.y = transform.position.y;
         lookAtPoint -= transform.position;
@@ -145,9 +145,8 @@ public class Player : MonoBehaviour
 
     private void TryToDamage(TestEnemy enemy)
     {
-        enemy.BeingSucked = true;
+        enemy.GetSucked();
         var distance = Vector3.Distance(new Vector3(_movement.x, 0, _movement.y), (enemy.transform.position - transform.position).normalized);
-        Debug.Log(distance);
         if (distance > 1.25f)//distance will be a max of 2 since we're working with normalized vectors. 2 is best sucking, 0 is worst. 1 is if you're not holding any buttons.
         {
             enemy.HpManager.TakeDamage(Time.deltaTime * distance * _damageMult);
@@ -176,7 +175,7 @@ public class Player : MonoBehaviour
             _suctionGrip -= Time.deltaTime * 5 * 10;
             _hpManager.TakeDamage(Time.deltaTime * 20);
         }
-        enemy.Rb.AddForce(-enemy.transform.forward * ((1000 + distance * 800) * Time.deltaTime), ForceMode.Force);
+        enemy.Rb.AddForce((transform.position - enemy.transform.position) * ((1000 + distance * 800) * Time.deltaTime), ForceMode.Force);
     }
 
     private Vector3 AdjustVelocityToSlope(Vector3 velocity)
@@ -202,7 +201,7 @@ public class Player : MonoBehaviour
         if (collider.CompareTag("Enemy") && _isSucking)
         {
             var enemy = collider.GetComponent<TestEnemy>();
-            enemy.BeingSucked = true;
+            enemy.GetSucked();
             if (!SuckingEnemiesList.Contains(enemy))
             {
                 SuckingEnemiesList.Add(enemy);
@@ -210,7 +209,7 @@ public class Player : MonoBehaviour
         }
         else if (collider.CompareTag("Enemy") && !_isSucking)
         {
-            collider.GetComponent<TestEnemy>().BeingSucked = false;
+            collider.GetComponent<TestEnemy>().GetUnsucked();
         }
     }
 
