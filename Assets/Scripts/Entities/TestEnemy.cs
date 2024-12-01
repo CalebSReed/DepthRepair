@@ -13,6 +13,8 @@ public class TestEnemy : MonoBehaviour
     [SerializeField] private float _speed;
     private Quaternion _targetRot;
     private bool _playerFound;
+    private float _timeToFlipRotation = .5f;
+    private bool _mirrorSquirmRotation;
 
     void Start()
     {
@@ -23,17 +25,14 @@ public class TestEnemy : MonoBehaviour
     {
         FindPlayer();
 
-        if (_playerFound)
+        if (BeingSucked)
         {
-            if (!BeingSucked)
-            {
-                ChasePlayer();
-            }
-            else
-            {
-                Squirm();
-                RunFromPlayer();
-            }
+            Squirm();
+            RunFromPlayer();
+        }
+        if (_playerFound && !BeingSucked)
+        {
+            ChasePlayer();
         }
     }
 
@@ -69,19 +68,28 @@ public class TestEnemy : MonoBehaviour
 
     private void RunFromPlayer()
     {
-        var targetPos = transform.position + (transform.forward * _speed * 2 * Time.deltaTime);
+        var targetPos = transform.position + (transform.forward * _speed * 4 * Time.deltaTime);
         transform.position = targetPos;
+        //Debug.Log(targetPos);
     }
 
     private void Squirm()
     {
-        if (transform.rotation == _targetRot)
+        if (_mirrorSquirmRotation)
         {
-            _targetRot = Quaternion.AngleAxis(Random.Range(0, 360), Vector3.up) * transform.rotation;
+            transform.Rotate(Vector3.up, 1f);
         }
         else
         {
-            transform.rotation = Quaternion.Lerp(transform.rotation, _targetRot, Time.deltaTime);
+            transform.Rotate(Vector3.up, -1f);
+        }
+
+        _timeToFlipRotation -= Time.deltaTime;
+
+        if (_timeToFlipRotation < 0f)
+        {
+            _timeToFlipRotation = Random.Range(.5f, 1f);
+            _mirrorSquirmRotation = !_mirrorSquirmRotation;
         }
     }
 

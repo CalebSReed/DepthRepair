@@ -106,8 +106,15 @@ public class Player : MonoBehaviour
         _turnDuration -= Time.deltaTime;
         if (_turnDuration < 0)
         {
-            _turnDuration += 1f;
+            _turnDuration += Random.Range(1f, 2f);
             _isPlayerTurn = !_isPlayerTurn;
+            if (!_isPlayerTurn)
+            {
+                foreach(var enemy in SuckingEnemiesList)
+                {
+                    enemy.Rb.velocity = Vector3.zero;
+                }
+            }
         }
     }
 
@@ -195,12 +202,12 @@ public class Player : MonoBehaviour
         if (_isPlayerTurn)
         {
             enemy.transform.position = ForceMaximumDistanceFromPoint(transform.position, enemy.transform.position, 10f);
-            enemy.Rb.AddForce((transform.position - enemy.transform.position) * ((800 + distance * 800) * Time.deltaTime), ForceMode.Force);
+            enemy.Rb.AddForce((transform.position - enemy.transform.position) * ((400 + distance * 400) * Time.deltaTime), ForceMode.Force);
         }
         else
         {
             transform.position = ForceMaximumDistanceFromPoint(enemy.transform.position, transform.position, 10f);
-            //_rb.AddForce((enemy.transform.position - transform.position) * ((1000 + distance * 800) * Time.deltaTime), ForceMode.Force);
+            _rb.AddForce((enemy.transform.position - transform.position) * (100 * Time.deltaTime), ForceMode.Force);
         }
     }
 
@@ -209,21 +216,16 @@ public class Player : MonoBehaviour
         Vector3 newPos;
         float distance = Vector2.Distance(new Vector2(origin.x, origin.z), new Vector2(target.x, target.z));
 
-        newPos.x = origin.x + maxDistance / distance * (target.x - origin.x);// 0,0 0,1 -> 0 + 10 / 1 * (0 + 1) = 0, 10
+        newPos.x = origin.x + maxDistance / distance * (target.x - origin.x);
         newPos.y = target.y;
         newPos.z = origin.z + maxDistance / distance * (target.z - origin.z);
-        Debug.Log($"enemy pos is {target}");
-        Debug.Log($"Newpos is {newPos}");
-        Debug.Log($"Distance between origin and newpos is {Vector3.Distance(origin, newPos)}");
         if (Vector3.Distance(origin, target) > maxDistance)
         {
-            //newPos.x *= -1f;
-            //newPos.z *= -1f;
-            Debug.Log($"Teleporting to : {newPos}");
             return newPos;
         }
         else
         {
+            
             return target;
         }
     }
